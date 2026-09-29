@@ -1,39 +1,81 @@
 Hospital Management API
 
-A backend REST API for managing hospital operations, built with FastAPI, SQLAlchemy, and Alembic.
+A RESTful backend API for managing hospital operations, built with FastAPI, SQLAlchemy, and Alembic.
 
-The system provides authenticated administrative access to manage patients, doctors, staff, appointments, and medical records. It also implements JWT-based authentication with separate privileges for the primary administrator and normal administrators.
+The API provides authenticated administrative access for managing patients, doctors, staff, appointments, and medical records.
 
-🚧 Status: In active development
-Core backend functionality and authentication are implemented. PostgreSQL, Docker, and deployment are planned next.
+Status: In active development
+Core backend functionality, database relationships, migrations, authentication, and authorization are implemented. PostgreSQL, Docker, and deployment are planned next.
 
 Features
 
-* RESTful API built with FastAPI
-* SQLAlchemy ORM for database operations
-* Alembic database migrations
-* JWT-based authentication
-* Bcrypt password hashing
-* Protected API routes
-* Primary-admin and normal-admin authorization
 * Patient management
 * Doctor management
 * Staff management
 * Appointment management
 * Medical record management
-* Foreign-key relationships between related entities
-* Request and response validation with Pydantic
+* SQLAlchemy ORM
+* Relational database design
+* Primary key and foreign key relationships
+* Alembic database migrations
+* JWT authentication
+* Bcrypt password hashing
+* Protected API routes
+* Primary admin and normal admin authorization
+* Pydantic validation
 * Centralized exception handling
 
-Authentication & Authorization
+Database Design
 
-The application uses JWT access tokens to protect administrative endpoints.
+The application follows a relational database design using SQLAlchemy.
 
-There are two levels of administrative access:
+Each entity has its own primary key (PK) that uniquely identifies a record.
 
-Primary Administrator
+Relationships between entities are created using foreign keys (FKs).
 
-The primary administrator is created during initial setup and can:
+Primary Keys
+
+* Patient.id uniquely identifies a patient.
+* Doctor.id uniquely identifies a doctor.
+* Staff.id uniquely identifies a staff member.
+* User.id uniquely identifies an administrator.
+* Appointment.id uniquely identifies an appointment.
+* MedicalRecord.id uniquely identifies a medical record.
+
+Foreign Keys
+
+Appointments and medical records connect existing entities using foreign keys instead of duplicating their information.
+
+Appointment
+
+* patient_id → patients.id
+* doctor_id → doctors.id
+
+This connects an appointment to one patient and one doctor.
+
+MedicalRecord
+
+* patient_id → patients.id
+* doctor_id → doctors.id
+
+This connects a medical record to the patient and doctor associated with it.
+
+SQLAlchemy relationships are used on top of these foreign keys to navigate between related objects.
+
+
+The database therefore stores relationships through PK/FK references, while SQLAlchemy provides convenient access to those related objects in the application.
+
+Authentication
+
+The API uses JWT access tokens for authentication.
+
+There are two administrative privilege levels.
+
+Primary Admin
+
+The primary administrator is created during initial setup.
+
+They can:
 
 * Manage hospital data
 * Create administrators
@@ -42,7 +84,7 @@ The primary administrator is created during initial setup and can:
 
 The primary administrator cannot be deleted through the API.
 
-Normal Administrator
+Normal Admin
 
 Normal administrators can manage hospital data, including:
 
@@ -52,64 +94,50 @@ Normal administrators can manage hospital data, including:
 * Appointments
 * Medical records
 
-Normal administrators cannot create or delete administrator accounts.
+They cannot create or delete administrator accounts.
 
-Database Design
+Project Structure
 
-The application uses a relational database with foreign keys and SQLAlchemy relationships.
+The application is organized into separate layers:
 
-The main entities include:
+* app/model — SQLAlchemy database models
+* app/schema — Pydantic schemas
+* app/router — API routes
+* app/util — database, authentication, security, and utility modules
+* app/main.py — FastAPI application entry point
+* alembic/ — database migrations
+* create_admin.py — initial administrator setup
+* make_primary_admin.py — primary administrator setup
 
-* Patient
-* Doctor
-* Staff
-* Appointment
-* Medical Record
-* User
-
-Appointments and medical records reference patients and doctors through foreign keys rather than duplicating their information.
-
-Project Architecture
-
-The application follows a layered structure:
-
-app/
-├── model/       # SQLAlchemy database models
-├── schema/      # Pydantic request/response schemas
-├── router/      # API endpoints
-├── util/        # Database, authentication and security utilities
-└── main.py      # FastAPI application entry point
-
-This separation keeps database models, validation, API routes, and supporting functionality organized as the project grows.
-
-Technology Stack
+Tech Stack
 
 * Python
 * FastAPI
 * Pydantic
 * SQLAlchemy
 * Alembic
-* SQLite — local development
+* SQLite
 * JWT
-* Passlib / Bcrypt
+* Passlib
+* Bcrypt
 
-Running Locally
+Getting Started
 
-Clone the Repository
+Clone the repository
 
 git clone https://github.com/hasssssankhalid0001-eng/hospital-management-api.git
 cd hospital-management-api
 
-Create a Virtual Environment
+Create a virtual environment
 
 python -m venv myenv
 source myenv/bin/activate
 
-Install Dependencies
+Install dependencies
 
 pip install fastapi uvicorn sqlalchemy alembic python-jose[cryptography] passlib[bcrypt] python-dotenv
 
-Configure Environment Variables
+Configure environment variables
 
 Create a .env file in the project root:
 
@@ -117,29 +145,27 @@ APP_NAME=Hospital Management API
 APP_VERSION=1.0.0
 SECRET_KEY=your-secret-key
 
-Do not commit .env to the repository.
+Do not commit .env or any secrets to the repository.
 
-Apply Database Migrations
+Apply database migrations
 
 alembic upgrade head
 
-Create the Initial Administrator
+Create the initial administrator
 
 python create_admin.py
 
-Start the Server
+Start the server
 
 uvicorn app.main:app --reload
 
-Interactive API documentation is available at:
+The interactive API documentation will be available at:
 
 http://127.0.0.1:8000/docs
 
 Database Migrations
 
-Database schema changes are managed using Alembic.
-
-Create a migration after modifying the SQLAlchemy models:
+Create a migration after changing the SQLAlchemy models:
 
 alembic revision --autogenerate -m "description of change"
 
@@ -147,19 +173,10 @@ Apply migrations:
 
 alembic upgrade head
 
-Project Roadmap
+Roadmap
 
-* FastAPI backend architecture
-* SQLAlchemy database models
-* CRUD operations
-* Entity relationships
-* Alembic migrations
-* JWT authentication
-* Password hashing
-* Admin authorization
-* Primary-admin privileges
-* PostgreSQL
-* Docker
+* PostgreSQL database
+* Docker containerization
 * Cloud deployment
 * Production configuration
 * Final testing and documentation
