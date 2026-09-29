@@ -1,4 +1,4 @@
-Hospital Management API
+HOSPITAL MANAGEMENT API
 
 A backend API for managing hospital operations, built with FastAPI and SQLAlchemy.
 
